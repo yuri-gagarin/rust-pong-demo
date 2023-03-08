@@ -13,6 +13,14 @@ const BALL_SIZE_HALF: f32 = BALL_SIZE * 0.5;
 const PLAYER_SPEED: f32 = 400.0;
 // messages - errors //
 const VIDEO_ERR_MSG: &str = "Video Card Error";
+
+fn check_collision(value: &mut f32, low: f32, high: f32) {
+    if *value < low {
+        *value = low;
+    } else if *value > high {
+        *value = high;
+    }
+}
 struct MainState {
     player_one_pos: nalgebra::Point2<f32>,
     player_two_pos: nalgebra::Point2<f32>,
@@ -31,14 +39,28 @@ impl MainState {
 }
 impl event::EventHandler for MainState {
     fn update(&mut self, context: &mut Context) -> GameResult {
+        let (_, screen_height) = graphics::drawable_size(context);
         // use deltaTime to make movement independent //
         let dt: f32 = ggez::timer::delta(context).as_secs_f32();
+
+        // player one movement //
         if keyboard::is_key_pressed(context, KeyCode::W) {
             self.player_one_pos.y -= PLAYER_SPEED * dt;
         }
         if keyboard::is_key_pressed(context, KeyCode::S) {
             self.player_one_pos.y += PLAYER_SPEED * dt; 
         }
+        check_collision(&mut self.player_one_pos.y, PADDLE_HEIGHT_HALF, screen_height - PADDLE_HEIGHT_HALF);
+
+        // player two movement //
+        if keyboard::is_key_pressed(context, KeyCode::Up) {
+            self.player_two_pos.y -= PLAYER_SPEED * dt;
+        }
+        if keyboard::is_key_pressed(context, KeyCode::Down) {
+            self.player_two_pos.y += PLAYER_SPEED * dt; 
+        }
+        check_collision(&mut self.player_two_pos.y, PADDLE_HEIGHT_HALF, screen_height - PADDLE_HEIGHT_HALF);
+        
         Ok(())
     }
     fn draw(&mut self, context: &mut Context) -> GameResult {
