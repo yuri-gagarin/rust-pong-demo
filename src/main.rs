@@ -1,5 +1,7 @@
 use ggez;
-use ggez::{Context, ContextBuilder, GameResult, graphics, event};
+use ggez::{graphics, event};
+use ggez::{Context, ContextBuilder, GameResult};
+use graphics::Rect;
 
 struct MainState {
 
@@ -14,6 +16,14 @@ impl event::EventHandler for MainState {
         Ok(())
     }
     fn draw(&mut self, context: &mut Context) -> GameResult {
+        graphics::clear(context, graphics::BLACK);
+
+        // make a paddle //
+        let first_paddle: Rect = graphics::Rect::new(10.0, 10.0, 300.0, 150.0);
+        let rect_mesh = graphics::Mesh::new_rectangle(context, graphics::DrawMode::fill(), first_paddle, graphics::WHITE).expect("Video Card Error");
+
+        graphics::draw(context, &rect_mesh, graphics::DrawParam::default()).expect("Video card error");
+        graphics::present(context).expect("Video Error");
         Ok(())
     }
 }
