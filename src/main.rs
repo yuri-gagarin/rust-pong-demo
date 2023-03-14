@@ -3,6 +3,7 @@ use ggez::{graphics, event, nalgebra};
 use ggez::{Context, ContextBuilder, GameResult};
 use ggez::input::keyboard::{self, KeyCode};
 use graphics::Rect;
+use rand::{thread_rng, Rng};
 
 const PADDLE_HEIGHT: f32 = 100.0;
 const PADDLE_WIDTH: f32 = 20.0;
@@ -11,6 +12,7 @@ const PADDLE_WIDTH_HALF: f32 = PADDLE_WIDTH * 0.5;
 const BALL_SIZE: f32 = 30.0;
 const BALL_SIZE_HALF: f32 = BALL_SIZE * 0.5;
 const PLAYER_SPEED: f32 = 400.0;
+const BALL_SPEED: f32 = 500.0;
 // messages - errors //
 const VIDEO_ERR_MSG: &str = "Video Card Error";
 
@@ -32,19 +34,37 @@ fn move_paddle(pos: &mut nalgebra::Point2<f32>, keycode: KeyCode, y_dir: f32, co
     check_collision(&mut pos.y, PADDLE_HEIGHT_HALF, screen_height - PADDLE_HEIGHT_HALF);
 
 }
+
+fn randomize_vector(vector: &mut nalgebra::Vector2<f32>, x: f32, y: f32) {
+    let mut rng = thread_rng();
+
+    vector.x = match rng.gen_bool(0.5) {
+        true => x,
+        false => -x,
+    };
+    vector.y = match rng.gen_bool(0.5) {
+        true => y,
+        false => -y
+    };
+}
 struct MainState {
     player_one_pos: nalgebra::Point2<f32>,
     player_two_pos: nalgebra::Point2<f32>,
     ball_pos: nalgebra::Point2<f32>,
+    ball_vector: nalgebra::Vector2<f32>,
 }
 impl MainState {
     pub fn new(context: &mut Context) -> Self {
         let (screen_width, screen_height) = graphics::drawable_size(context);
         let (screeen_width_half, screen_height_half) = (screen_width * 0.5, screen_height * 0.5);
+        // 'ball starting velocity' //
+        let mut ball_vector = nalgebra::Vector2::new(0.0, 0.0);
+        randomize_vector(&mut ball_vector, BALL_SPEED, BALL_SPEED);
         return MainState {
             player_one_pos: nalgebra::Point2::new(PADDLE_WIDTH_HALF, screen_height_half),
             player_two_pos: nalgebra::Point2::new(screen_width - PADDLE_WIDTH_HALF, screen_height_half),
             ball_pos: nalgebra::Point2::new(screeen_width_half, screen_height_half),
+            ball_vector: ball_vector
         };
     }
 }
