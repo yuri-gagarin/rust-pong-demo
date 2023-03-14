@@ -58,7 +58,7 @@ impl MainState {
         let (screen_width, screen_height) = graphics::drawable_size(context);
         let (screeen_width_half, screen_height_half) = (screen_width * 0.5, screen_height * 0.5);
         // 'ball starting velocity' //
-        let mut ball_vector = nalgebra::Vector2::new(0.0, 0.0);
+        let mut ball_vector = nalgebra::Vector2::new(10.0, 5.0);
         randomize_vector(&mut ball_vector, BALL_SPEED, BALL_SPEED);
         return MainState {
             player_one_pos: nalgebra::Point2::new(PADDLE_WIDTH_HALF, screen_height_half),
@@ -79,6 +79,20 @@ impl event::EventHandler for MainState {
         // paddle movement player two //
         move_paddle(&mut self.player_two_pos, KeyCode::Up, -1.0, context);
         move_paddle(&mut self.player_two_pos, KeyCode::Down, 1.0, context);
+
+        // ball and ball physics //
+        self.ball_pos += self.ball_vector * dt;
+
+        if self.ball_pos.x < 0.0 {
+            self.ball_pos.x = screen_width * 0.5;
+            self.ball_pos.y = screen_height * 0.5;
+            randomize_vector(& mut self.ball_vector, BALL_SPEED, BALL_SPEED);
+        }
+        if self.ball_pos.x > screen_width {
+            self.ball_pos.x = screen_width * 0.5;
+            self.ball_pos.y = screen_height * 0.5;
+            randomize_vector(&mut self.ball_vector, BALL_SPEED, BALL_SPEED);
+        }
         Ok(())
     }
     fn draw(&mut self, context: &mut Context) -> GameResult {
