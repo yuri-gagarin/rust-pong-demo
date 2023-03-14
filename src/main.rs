@@ -21,6 +21,17 @@ fn check_collision(value: &mut f32, low: f32, high: f32) {
         *value = high;
     }
 }
+
+fn move_paddle(pos: &mut nalgebra::Point2<f32>, keycode: KeyCode, y_dir: f32, context: &mut Context) {
+    let dt: f32 = ggez::timer::delta(context).as_secs_f32();
+    let screen_height = graphics::drawable_size(context).1;
+
+    if keyboard::is_key_pressed(context, keycode) {
+        pos.y += y_dir * PLAYER_SPEED * dt;
+    }
+    check_collision(&mut pos.y, PADDLE_HEIGHT_HALF, screen_height - PADDLE_HEIGHT_HALF);
+
+}
 struct MainState {
     player_one_pos: nalgebra::Point2<f32>,
     player_two_pos: nalgebra::Point2<f32>,
@@ -39,28 +50,15 @@ impl MainState {
 }
 impl event::EventHandler for MainState {
     fn update(&mut self, context: &mut Context) -> GameResult {
-        let (_, screen_height) = graphics::drawable_size(context);
-        // use deltaTime to make movement independent //
-        let dt: f32 = ggez::timer::delta(context).as_secs_f32();
-
-        // player one movement //
-        if keyboard::is_key_pressed(context, KeyCode::W) {
-            self.player_one_pos.y -= PLAYER_SPEED * dt;
-        }
-        if keyboard::is_key_pressed(context, KeyCode::S) {
-            self.player_one_pos.y += PLAYER_SPEED * dt; 
-        }
-        check_collision(&mut self.player_one_pos.y, PADDLE_HEIGHT_HALF, screen_height - PADDLE_HEIGHT_HALF);
-
-        // player two movement //
-        if keyboard::is_key_pressed(context, KeyCode::Up) {
-            self.player_two_pos.y -= PLAYER_SPEED * dt;
-        }
-        if keyboard::is_key_pressed(context, KeyCode::Down) {
-            self.player_two_pos.y += PLAYER_SPEED * dt; 
-        }
-        check_collision(&mut self.player_two_pos.y, PADDLE_HEIGHT_HALF, screen_height - PADDLE_HEIGHT_HALF);
-        
+        // dt to make paddles - 'ball' move smoothly //
+        let dt = ggez::timer::delta(context).as_secs_f32();
+        let (screen_width, screen_height) = graphics::drawable_size(context);
+        // paddle movement player one //
+        move_paddle(&mut self.player_one_pos, KeyCode::W, -1.0, context);
+        move_paddle(&mut self.player_one_pos, KeyCode::S,  1.0, context);
+        // paddle movement player two //
+        move_paddle(&mut self.player_two_pos, KeyCode::Up, -1.0, context);
+        move_paddle(&mut self.player_two_pos, KeyCode::Down, 1.0, context);
         Ok(())
     }
     fn draw(&mut self, context: &mut Context) -> GameResult {
