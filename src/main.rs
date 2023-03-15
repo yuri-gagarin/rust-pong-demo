@@ -1,5 +1,4 @@
 use ggez;
-use ggez::nalgebra::ComplexField;
 use ggez::{graphics, event, nalgebra};
 use ggez::{Context, ContextBuilder, GameResult};
 use ggez::input::keyboard::{self, KeyCode};
@@ -7,6 +6,7 @@ use graphics::Rect;
 use rand::{thread_rng, Rng};
 
 const PADDLE_PAD: f32 = 40.0;
+const DIVIDER: f32 = 5.0;
 const PADDLE_HEIGHT: f32 = 100.0;
 const PADDLE_WIDTH: f32 = 20.0;
 const PADDLE_HEIGHT_HALF: f32 = PADDLE_HEIGHT * 0.5;
@@ -135,16 +135,25 @@ impl event::EventHandler for MainState {
         Ok(())
     }
     fn draw(&mut self, context: &mut Context) -> GameResult {
+        let (screen_width, screen_height) = graphics::drawable_size(context);
+        let (screen_width_half, _) = (screen_width * 0.5, screen_height * 0.5);
+
         graphics::clear(context, graphics::BLACK);
 
         // make a paddle //
         let first_paddle: Rect = graphics::Rect::new(-PADDLE_WIDTH_HALF, -PADDLE_HEIGHT_HALF, PADDLE_WIDTH, PADDLE_HEIGHT);
-        let rect_mesh = graphics::Mesh::new_rectangle(context, graphics::DrawMode::fill(), first_paddle, graphics::WHITE).expect("Video Card Error");
+        let rect_mesh = graphics::Mesh::new_rectangle(context, graphics::DrawMode::fill(), first_paddle, graphics::WHITE).expect(VIDEO_ERR_MSG);
 
         let ball_rect = graphics::Rect::new(-BALL_SIZE_HALF, -BALL_SIZE_HALF, BALL_SIZE, BALL_SIZE);
-        let ball_mesh = graphics::Mesh::new_rectangle(context, graphics::DrawMode::fill(), ball_rect, graphics::WHITE).expect("Video Error");
+        let ball_mesh = graphics::Mesh::new_rectangle(context, graphics::DrawMode::fill(), ball_rect, graphics::WHITE).expect(VIDEO_ERR_MSG);
+        // divider //
+        let divider_rect = graphics::Rect::new(-DIVIDER * 0.5, 0.0, DIVIDER, screen_height);
+        let divider_mesh = graphics::Mesh::new_rectangle(context, graphics::DrawMode::fill(), divider_rect, graphics::WHITE).expect(VIDEO_ERR_MSG);
 
         let mut draw_param = graphics::DrawParam::default();
+
+        draw_param.dest = [screen_width_half, 0.0].into();
+        graphics::draw(context, &divider_mesh, draw_param).expect(VIDEO_ERR_MSG);
 
         draw_param.dest = self.player_one_pos.into();
         graphics::draw(context, &rect_mesh, draw_param).expect(VIDEO_ERR_MSG);
@@ -155,8 +164,6 @@ impl event::EventHandler for MainState {
         draw_param.dest = self.ball_pos.into();
         graphics::draw(context, &ball_mesh, draw_param).expect(VIDEO_ERR_MSG);
         // draw out the score //
-        let (screen_width, screen_height) = graphics::drawable_size(context);
-        let (screen_width_half, screen_height_half) = (screen_width * 0.5, screen_height * 0.5);
         let score_text = graphics::Text::new(format!("{}          {}", self.player_one_score, self.player_two_score));
         // set the inital postion //
         let mut score_position = nalgebra::Point2::new(screen_width_half, 20.0);
